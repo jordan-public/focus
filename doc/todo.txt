@@ -1,0 +1,4 @@
+- Create LICENSE
+- Create README.md
+
+- Investigate: How does Uniswap V3 enter the range of a liquidity pool.
