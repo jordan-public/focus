@@ -54,6 +54,15 @@ contract ProxySwap {
     amountIn = 0; // so far
     
     if (amountOutFromFToken > 0) { // wrap A to fA execute the fA/fB swap and unwrap the fB to B
+
+      // But, before we exchange let's check if there is an opportunity to re-proce (re-focus) the fTokenA
+      if (0 == _fTokenA.balanceOf(address(this))) { // No fTokenB liquidity
+        // Check the current Uniswap spot price
+
+        // Re-focus: change the factor so the current Uniswap spot parice matches the low end of the fTokenA liquidity range 
+        // _fTokenA.setFactor(factor);
+      }
+
       // Approve the router to _fTokenA.
       TransferHelper.safeApprove(address(_fTokenA), address(uniswapRouter), _fTokenA.fromUnderlying(amountInMaximum - amountIn));
       uint256 wrapped = _fTokenA.wrap(_fTokenA.fromUnderlying(amountInMaximum - amountIn));
