@@ -14,16 +14,22 @@ contract ProxySwap {
   IERC20 public _tokenB;
   FocusToken public _fTokenA;
   FocusToken public _fTokenB;
+  uint256 public constant MAX_INT = 2**256 - 1;
 
   uint24 public constant poolFee = 3000; // Constant for the prototype. To be made variable in real product.
 
-  ISwapRouter uniswapRouter = ISwapRouter(0xE592427A0AEce92De3Edee1F18E0157C05861564); // From https://github.com/Uniswap/v3-periphery/blob/main/deploys.md
+  ISwapRouter public constant uniswapRouter = ISwapRouter(0xE592427A0AEce92De3Edee1F18E0157C05861564); // From https://github.com/Uniswap/v3-periphery/blob/main/deploys.md
 
   constructor(address tokenA, address tokenB) {
     _tokenA = IERC20(tokenA);
     _tokenB = IERC20(tokenB);
     _fTokenA = FocusToken(new FocusToken(_tokenA));
     _fTokenB = FocusToken(new FocusToken(_tokenA));
+    // Approvals stay forever
+    TransferHelper.safeApprove(address(_tokenA), address(uniswapRouter), MAX_INT);
+    TransferHelper.safeApprove(address(_tokenB), address(uniswapRouter), MAX_INT);
+    TransferHelper.safeApprove(address(_fTokenA), address(uniswapRouter), MAX_INT);
+    TransferHelper.safeApprove(address(_fTokenB), address(uniswapRouter), MAX_INT);
   }
 
   function swapExactOutputSingle(uint256 amountOut) external returns (uint256 amountIn) {
@@ -63,8 +69,8 @@ contract ProxySwap {
         // _fTokenA.setFactor(factor);
       }
 
-      // Approve the router to _fTokenA.
-      TransferHelper.safeApprove(address(_fTokenA), address(uniswapRouter), _fTokenA.fromUnderlying(amountInMaximum - amountIn));
+      // No need - see constructor: TransferHelper.safeApprove(address(_fTokenA), address(uniswapRouter), _fTokenA.fromUnderlying(amountInMaximum - amountIn));
+
       uint256 wrapped = _fTokenA.wrap(_fTokenA.fromUnderlying(amountInMaximum - amountIn));
 
       // Naively set amountOutMinimum to 0. In production, use an oracle or other data source to choose a safer value for amountOutMinimum.
@@ -83,17 +89,16 @@ contract ProxySwap {
 
       // Execute the swap.
       uint256 amountInF = uniswapRouter.exactOutputSingle(params);
-      _fTokenA.unwrap(wrapped - amountInF); // unwrap the unused input
+      _fTokenA.unwrap(wrapped - amountInF); // unwrap the unused input - will send change at the end
       amountIn += _fTokenA.toUnderlying(amountInF);
 
-      _fTokenB.unwrap(amountOutFromFToken); // unwrap the output
+      TransferHelper.safeTransfer(address(_tokenB), msg.sender, _fTokenB.unwrap(amountOutFromFToken)); // unwrap and send the output
 
-      TransferHelper.safeApprove(address(_fTokenA), address(uniswapRouter), 0);
+      // No need - see constructor: TransferHelper.safeApprove(address(_fTokenA), address(uniswapRouter), 0);
     }
 
     if (amountOutFromUnderlying > 0) { // Proxy directly to Uniswap V3
-      // Approve the router to spend _tokenA.
-      TransferHelper.safeApprove(address(_tokenA), address(uniswapRouter), amountInMaximum - amountIn);
+      // No need - see constructor: TransferHelper.safeApprove(address(_tokenA), address(uniswapRouter), amountInMaximum - amountIn);
 
       // Naively set amountOutMinimum to 0. In production, use an oracle or other data source to choose a safer value for amountOutMinimum.
       // We also set the sqrtPriceLimitx96 to be 0 to ensure we swap our exact input amount.
@@ -112,10 +117,10 @@ contract ProxySwap {
       // Execute the swap.
       amountIn += uniswapRouter.exactOutputSingle(params);
 
-      TransferHelper.safeApprove(address(_tokenA), address(uniswapRouter), 0);
+      // No need - see constructor: TransferHelper.safeApprove(address(_tokenA), address(uniswapRouter), 0);
     }
 
-    if (amountIn < amountInMaximum) { // Give the change back  
+    if (amountIn < amountInMaximum) { // Send back the change
       TransferHelper.safeTransfer(address(_tokenA), msg.sender, amountInMaximum - amountIn);
     }
   }
