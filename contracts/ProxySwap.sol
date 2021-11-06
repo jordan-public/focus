@@ -26,10 +26,12 @@ contract ProxySwap {
     _fTokenA = FocusToken(new FocusToken(_tokenA));
     _fTokenB = FocusToken(new FocusToken(_tokenA));
     // Approvals stay forever
-    TransferHelper.safeApprove(address(_tokenA), address(uniswapRouter), MAX_INT);
-    TransferHelper.safeApprove(address(_tokenB), address(uniswapRouter), MAX_INT);
-    TransferHelper.safeApprove(address(_fTokenA), address(uniswapRouter), MAX_INT);
-    TransferHelper.safeApprove(address(_fTokenB), address(uniswapRouter), MAX_INT);
+    TransferHelper.safeApprove(address(_tokenA), address(uniswapRouter), MAX_INT); // Uniswap can move ProxySwap's _tokenA
+    TransferHelper.safeApprove(address(_tokenB), address(uniswapRouter), MAX_INT); // Uniswap can move ProxySwap's _tokenB
+    TransferHelper.safeApprove(address(_fTokenA), address(uniswapRouter), MAX_INT); // Uniswap can move ProxySwap's _fTokenA
+    TransferHelper.safeApprove(address(_fTokenB), address(uniswapRouter), MAX_INT); // Uniswap can move ProxySwap's _fTokenB
+    _tokenA.approve(_fTokenA, MAX_INT); // _fTokenA can wrap ProxySwap's _tokenA
+    _tokenB.approve(_fTokenB, MAX_INT); // _fTokenB can wrap ProxySwap's _tokenB
   }
 
   function swapExactOutputSingle(uint256 amountOut) external returns (uint256 amountIn) {
@@ -61,7 +63,7 @@ contract ProxySwap {
     
     if (amountOutFromFToken > 0) { // wrap A to fA execute the fA/fB swap and unwrap the fB to B
 
-      // But, before we exchange let's check if there is an opportunity to re-proce (re-focus) the fTokenA
+      // But, before we exchange let's check if there is an opportunity to re-price (re-focus) the fTokenA
       if (0 == _fTokenA.balanceOf(address(this))) { // No fTokenB liquidity
         // Check the current Uniswap spot price
 
