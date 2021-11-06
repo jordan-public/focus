@@ -1,4 +1,3 @@
 - Create README.md
 
-- Implement shifting of range (change factor) when there is no liquidity on that side.
 - Implement inverse swap.

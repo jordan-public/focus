@@ -10,26 +10,26 @@ import './interfaces/IFocusToken.sol';
 contract FocusToken is ERC20, IFocusToken {
   address owner;
   IERC20 public _underlyingToken;
-  uint256 public _factor; // Tells how many _underlyingToken is one FocusToken (not iverse because of mul/div rounding)
+  uint256 public _factorX96; // Tells how many _underlyingToken is one FocusToken (not iverse because of mul/div rounding)
 
   constructor(IERC20 underlyingToken) ERC20("FocusToken", string(abi.encodePacked("f",ERC20(address(underlyingToken)).name()))) {
     owner = msg.sender;
     _underlyingToken = underlyingToken;
-    _factor = 1 * 10^18; // Initially it's 1
+    _factorX96 = 1 << 96; // Initially it's 1.0
   }
 
-  function setFactor(uint256 factor) public {
+  function setFactorX96(uint256 factorX96) public {
     require(msg.sender == owner, "Unauthorized");
     require(0 == totalSupply());
-    _factor = factor;
+    _factorX96 = factorX96;
   }
 
   function toUnderlying(uint256 amount) public view returns (uint256) {
-    return SafeMath.mul(amount, _factor);
+    return SafeMath.mul(amount, _factorX96) >> 96;
   }
 
   function fromUnderlying(uint256 amount) public view returns (uint256) {
-    return SafeMath.div(amount, _factor);
+    return SafeMath.div(amount << 96, _factorX96);
   }
 
   function unwrap(uint256 amount) public returns (uint256 u) {
