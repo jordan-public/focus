@@ -1,3 +1,8 @@
 - Create README.md
-
+    - Why
+    - How
+    - Show improvement
+    
 - Implement inverse swap.
+- Draw diagrams.
+- Prepare video.
