@@ -30,8 +30,8 @@ contract ProxySwap {
     TransferHelper.safeApprove(address(_tokenB), address(uniswapRouter), MAX_INT); // Uniswap can move ProxySwap's _tokenB
     TransferHelper.safeApprove(address(_fTokenA), address(uniswapRouter), MAX_INT); // Uniswap can move ProxySwap's _fTokenA
     TransferHelper.safeApprove(address(_fTokenB), address(uniswapRouter), MAX_INT); // Uniswap can move ProxySwap's _fTokenB
-    _tokenA.approve(_fTokenA, MAX_INT); // _fTokenA can wrap ProxySwap's _tokenA
-    _tokenB.approve(_fTokenB, MAX_INT); // _fTokenB can wrap ProxySwap's _tokenB
+    _tokenA.approve(address(_fTokenA), MAX_INT); // _fTokenA can wrap ProxySwap's _tokenA
+    _tokenB.approve(address(_fTokenB), MAX_INT); // _fTokenB can wrap ProxySwap's _tokenB
   }
 
   function swapExactOutputSingle(uint256 amountOut) external returns (uint256 amountIn) {
