@@ -12,7 +12,6 @@ import '@uniswap/v3-periphery/contracts/interfaces/IQuoter.sol';
 import '@uniswap/v3-periphery/contracts/interfaces/INonfungiblePositionManager.sol';
 
 import './FocusToken.sol';
-import './interfaces/IFocusToken.sol';
 
 contract ProxySwap {
   uint256 public constant MAX_INT = 2**256 - 1;

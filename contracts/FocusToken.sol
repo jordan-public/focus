@@ -5,9 +5,8 @@ pragma abicoder v2;
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/math/SafeMath.sol";
-import './interfaces/IFocusToken.sol';
 
-contract FocusToken is ERC20, IFocusToken {
+contract FocusToken is ERC20 {
   address owner;
   IERC20 public _underlyingToken;
   uint256 public _factorX96; // Tells how many _underlyingToken is one FocusToken (not iverse because of mul/div rounding)
