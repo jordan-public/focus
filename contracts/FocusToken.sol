@@ -8,7 +8,6 @@ import "@openzeppelin/contracts/math/SafeMath.sol";
 
 contract FocusToken is ERC20 {
   address owner;
-  address proxySwap;
   IERC20 public _underlyingToken;
   uint256 public _factorX96; // Tells how many _underlyingToken is one FocusToken (not iverse because of mul/div rounding)
 
@@ -18,13 +17,8 @@ contract FocusToken is ERC20 {
     _factorX96 = 1 << 96; // Initially it's 1.0
   }
 
-  function setProxySwapAddress(address psa) external {
-    require(msg.sender == owner, "Unauthorized");
-    proxySwap = psa;
-  }
-
   function setFactorX96(uint256 factorX96) public {
-    require(msg.sender == proxySwap, "Unauthorized");
+    require(msg.sender == owner, "Unauthorized");
     require(0 == totalSupply());
     _factorX96 = factorX96;
   }
