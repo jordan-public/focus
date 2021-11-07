@@ -42,6 +42,8 @@ The Focus Protocol proxies all swap requests to Uniswap V3. While the original t
 ## Why Focus Protocol works
 
 In Uniswap V3, as the LP goes further off-range, the chance to swap back to the desirable asset diminishes. In the Focus Protocol, the price of the desirable fToken constantly adjusts to stay at the edge of the active range. As soon as the price (market) turns around, the fToken LP starts working by creating revenue and re-acquiring the desirable asset.
+
+Finally, how does can the Focus Protocol pricing stay in sync with the Uniswap V3 pricing? Since it is using separate liquidity using the fTokens, the prices can diverge. Arbitrage using flash loans / flash swaps can solve this problem. As the prices start to differ, someone will use Uniswap V3, or any other flash loan / flash swap mechanism, and in the callback they will execute a reverse direction exchange on Focus Protocol. Uniswap stays in sync with the rest of the market using the same mechanism.
 ## Advanced Strategies
 
 For the UniCode Hackathon I only implemented expansion of the range when one of the assets in the LP is no longer held. 
