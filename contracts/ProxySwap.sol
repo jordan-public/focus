@@ -60,7 +60,7 @@ contract ProxySwap {
   function setMyLP(uint256 tokenID) external {
     require(msg.sender == owner);
     ( , , address token0, address token1, uint24 fee, int24 tickLower, int24 tickUpper, , , , , ) = nonfungiblePositionManager.positions(tokenID);
-    require(token0 == address(A.token) && token1 == address(B.token), "Wrong tokens");
+    require(token0 == address(A.fToken) && token1 == address(B.fToken), "Wrong tokens");
     require(poolFee == fee, "Wrong pool (fee)");
     (A.myLPRangeLower96, B.myLPRangeLower96) = (toRatioX96(tickLower), toRatioX96(tickUpper));
   }
