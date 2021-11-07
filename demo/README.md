@@ -60,6 +60,7 @@ Account 1: Approve ProxySwap to spend MAX_INT WETH: 0xb93c1a39f43ba55ba631512b5f
 
 Swap DAI -> 0.02 WETH: 0x17f19c9f3dcca2120064c51ca9a7237cf301d2320cf244e2e43213d6fdd3680d-failed
 0.02 = 20000000000000000 - fail (I have a tick math rounding issue - to fix use next tick up/down dependent on direction)
+
 Swap DAI -> 0.0001 WETH: 0x124c6955259c68756ae4c7b9e49e1ec86bd673804e74c3b55eb3cfc3fbfdfac8
 0.02 = 100000000000000
 
