@@ -58,3 +58,4 @@ Account 1: Approve ProxySwap to spend WETH: 0x242dae6c9fa1ec77ef3a9f6ef47de5dcb6
 
 Swap DAI -> 0.02 WETH: 0xdaebacdd691157aec7e49b37ea2f3079b40c87baff40aa601a9b17a75dc45a73
 0.02 = 20000000000000000
+(ProxySwap does not own any fTokens)

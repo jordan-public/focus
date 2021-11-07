@@ -59,4 +59,4 @@ The decision when to expand and when to contract (and effectively shift) the LP 
 
 Since there is no front end yet, I am calling the smart contracts in the protocol from Remix. The Ropsten Etherscan links for the demo transactions are shown in the demo folder:
 
-[Demo](demo/demo.md)
+[Demo](demo/README.md)
