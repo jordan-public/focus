@@ -1,4 +1,6 @@
-# Addresses on Ropsten
+# Demo
+
+The contracts for the Focus Protocol are deployed on **Ropsten**. Below is the entire calling sequence which shows the deployment addresses and the operation of the FocusProtocol.
 
 ## Tokens
 
