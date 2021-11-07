@@ -7,6 +7,7 @@ import '@openzeppelin/contracts/token/ERC20/ERC20.sol';
 import '@uniswap/v3-core/contracts/libraries/TickMath.sol';
 import '@uniswap/v3-core/contracts/libraries/LowGasSafeMath.sol';
 import '@uniswap/v3-periphery/contracts/libraries/TransferHelper.sol';
+import '@uniswap/v3-periphery/contracts/libraries/LiquidityAmounts.sol';
 import '@uniswap/v3-periphery/contracts/interfaces/ISwapRouter.sol';
 import '@uniswap/v3-periphery/contracts/interfaces/IQuoter.sol';
 import '@uniswap/v3-periphery/contracts/interfaces/INonfungiblePositionManager.sol';
@@ -31,6 +32,7 @@ contract ProxySwap {
 
   Asset public A;
   Asset public B;
+  uint256 myLPID;
 
   address owner;
 
@@ -62,6 +64,7 @@ contract ProxySwap {
     ( , , address token0, address token1, uint24 fee, int24 tickLower, int24 tickUpper, , , , , ) = nonfungiblePositionManager.positions(tokenID);
     require(token0 == address(A.fToken) && token1 == address(B.fToken), "Wrong tokens");
     require(poolFee == fee, "Wrong pool (fee)");
+    myLPID = tokenID;
     (A.myLPRangeLower96, B.myLPRangeLower96) = (toRatioX96(tickLower), toRatioX96(tickUpper));
   }
 
@@ -76,7 +79,11 @@ contract ProxySwap {
   function swapExactOutput(Asset storage from, Asset storage to, uint256 amountOut) internal returns (uint256 amountIn) {
     // The caller must from.token.approve(<this contract>, comfortable_amount)
 
-    uint256 amountInMaximum = from.token.balanceOf(msg.sender); // To be improved - now it takes the entire balance and returns the change later
+    uint256 amountInMaximum = from.token.balanceOf(msg.sender); // To be improved - now it takes the entire possible balance and returns the change later
+    {
+      uint256 amountAuthorized = from.token.allowance(msg.sender, address(this));
+      if (amountAuthorized < amountInMaximum) amountInMaximum = amountAuthorized;
+    }
 
     // Transfer the specified amount of from.token to this contract.
     TransferHelper.safeTransferFrom(address(from.token), msg.sender, address(this), amountInMaximum);
@@ -84,13 +91,30 @@ contract ProxySwap {
     uint256 amountOutFromUnderlying;
     uint256 amountOutFromFToken;
 
+    uint256 fromFTokenInMyLiquidity;
+    uint256 toFTokenInMyLiquidity;
+    {
+      ( , , , address token1, , int24 tickLower, int24 tickUpper, uint128 liquidity, , , , ) = nonfungiblePositionManager.positions(myLPID);
+      fromFTokenInMyLiquidity = LiquidityAmounts.getAmount0ForLiquidity(
+                TickMath.getSqrtRatioAtTick(tickLower), 
+                TickMath.getSqrtRatioAtTick(tickUpper), 
+                liquidity);
+      toFTokenInMyLiquidity = LiquidityAmounts.getAmount1ForLiquidity(
+                TickMath.getSqrtRatioAtTick(tickLower), 
+                TickMath.getSqrtRatioAtTick(tickUpper), 
+                liquidity);
+      if (address(from.fToken) == token1) { // Inverse swap
+        (fromFTokenInMyLiquidity, toFTokenInMyLiquidity) = (toFTokenInMyLiquidity, fromFTokenInMyLiquidity);
+      }
+    }
+
     // Split up the jobs
-    if (to.fToken.balanceOf(address(this)) > 0) { // Proxy pool has any available liquidity
-      if (to.fToken.toUnderlying(to.fToken.balanceOf(address(this))) >= amountOut) { // Proxy pool has sufficient liquidity
+    if (toFTokenInMyLiquidity > 0) { // Proxy pool has any available liquidity
+      if (to.fToken.toUnderlying(toFTokenInMyLiquidity) >= amountOut) { // Proxy pool has sufficient liquidity
         amountOutFromFToken = amountOut;
         amountOutFromUnderlying = 0;
       } else {
-        amountOutFromFToken = to.fToken.toUnderlying(to.fToken.balanceOf(address(this)));
+        amountOutFromFToken = to.fToken.toUnderlying(toFTokenInMyLiquidity);
         amountOutFromUnderlying = amountOut - amountOutFromFToken;
       }
     } else {
@@ -102,8 +126,8 @@ contract ProxySwap {
     
     if (amountOutFromFToken > 0) { // wrap A to fA execute the fA/fB swap and unwrap the fB to B
 
-      // But, before we exchange let's check if there is an opportunity to re-price (re-focus) the fTokenA
-      if (0 == from.fToken.balanceOf(address(this))) { // No fTokenA liquidity - we can from.fToken.setFactor to adjust and bring lowerBound of from.token equal to the spot price
+      // But, before we exchange let's check if there is an opportunity to re-price (re-focus) the from.fToken
+      if (0 == fromFTokenInMyLiquidity) { // No from.fToken liquidity - we can "from.fToken.setFactor" to adjust and bring lowerBound of from.fToken liquidity equal to the spot price
                                                     // This will bring our f-liquidity at the edge of the current price - the best that we can do 
         // Check the current Uniswap spot price: how many to.token can we get for 1 from.token?
         uint256 tokenToFor1TokenFrom = uniswapQuoter.quoteExactInputSingle(address(from.token), address(to.token), poolFee, 1 << ERC20(address(from.token)).decimals(), 0); // To improve: not exact + gas consuming
