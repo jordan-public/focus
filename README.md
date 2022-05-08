@@ -1,3 +1,9 @@
+This project is a [winner of Visor Best Tooling Hack Runner Up](https://showcase.ethglobal.com/unicode/focus) at the EthGlobal UniCode 2021 hackathon.
+
+In January 2022 it received a grant from [dlab](https://dlab.vc/)/[SOSV](https://sosv.com/) and [Advanced Blockchain](https://www.advancedblockchain.com/).
+
+This repository has moved to a private repository to continue development of a standalone Exchange / Automated Market Maker.
+
 # Focus Protocol
 Jordan Stojanovski
 ## Introduction
