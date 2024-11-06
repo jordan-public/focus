@@ -1,4 +1,4 @@
-This project is the winner of [Visor Best Tooling Hack Runner Up](https://showcase.ethglobal.com/unicode/focus) at the [UniCode 2021](https://unicode.ethglobal.com/) hackathon.
+This project is the winner of [Visor Best Tooling Hack Runner Up](https://ethglobal.com/showcase/focus-vg9ju) at the [UniCode 2021](https://ethglobal.com/events/unicode) hackathon.
 
 In January 2022 it received a grant from [dlab](https://dlab.vc/)/[SOSV](https://sosv.com/) and [Advanced Blockchain](https://www.advancedblockchain.com/).
 
